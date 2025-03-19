@@ -6,7 +6,7 @@
 #pragma comment(lib, "d3d11.lib")
 
 #define FAIL(message)                                                 \
-  std::cout << "media_kit: ANGLESurfaceManager: Failure: " << message \
+  std::cout << "libmpv_dart: ANGLESurfaceManager: Failure: " << message \
             << std::endl;                                             \
   return false
 

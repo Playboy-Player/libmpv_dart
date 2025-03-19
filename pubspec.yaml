@@ -32,11 +32,10 @@ flutter:
       ios:
         ffiPlugin: true
       linux:
-        ffiPlugin: true
+        pluginClass: LibmpvDartPlugin
       macos:
         ffiPlugin: true
       windows:
-        # ffiPlugin: true
         pluginClass: LibmpvDartPlugin
 executables:
   setup: setup
