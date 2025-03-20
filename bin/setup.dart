@@ -32,14 +32,6 @@ Future<void> setup4Windows({String mode = "debug"}) async {
   var newFolder = 'src/dynamicLib/windows';
   var newPath = path.join(path.dirname(pluginRootPath), newFolder);
 
-  // 检查并删除已有的“libtorch-windows”文件夹
-  var existingDir = Directory(newPath);
-  if (existingDir.existsSync()) {
-    print('Deleting existing $newFolder folder...');
-    await existingDir.delete(recursive: true);
-    print('$newFolder folder deleted.');
-  }
-
   // 下载文件
   var response = await http.get(url);
   if (response.statusCode == 200) {

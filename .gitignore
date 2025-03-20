@@ -29,5 +29,6 @@ migrate_working_dir/
 build/
 .vs/
 
+src/dynamicLib/windows/include/mpv/
 src/dynamicLib/windows/libmpv-2.dll
 src/dynamicLib/windows/libmpv.dll.a

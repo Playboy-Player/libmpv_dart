@@ -1,6 +1,6 @@
 name: libmpv_dart
 description: "A Flutter FFI plugin for libmpv that provides Dart bindings for libmpv."
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/Playboy-Player/libmpv_dart
 
 environment:

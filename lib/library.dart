@@ -8,9 +8,12 @@ class Library {
   static bool loaded = false;
   static bool flagFirst = false;
   static const String _libName = 'mpv';
-  static void init() {
+  static void init({String? path}) {
     try {
       final DynamicLibrary dylib = () {
+        if (path != null) {
+          return DynamicLibrary.open(path);
+        }
         if (Platform.isMacOS || Platform.isIOS) {
           return DynamicLibrary.open('$_libName.framework/$_libName');
         }

@@ -44,10 +44,7 @@ class PlayerPageState extends State<PlayerPage> {
   @override
   Widget build(BuildContext context) {
     late final colorScheme = Theme.of(context).colorScheme;
-    late final backgroundColor = Color.alphaBlend(
-      colorScheme.primary,
-      colorScheme.surface,
-    );
+    late final backgroundColor = colorScheme.surface;
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Column(
@@ -129,12 +126,15 @@ class PlayerPageState extends State<PlayerPage> {
   }
 
   Widget _buildSeekbar() {
+    late final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
       data: SliderThemeData(
-        // ignore: deprecated_member_use
-
+        activeTrackColor: colorScheme.secondaryContainer,
+        thumbColor: colorScheme.onSecondaryContainer,
         trackHeight: 4,
-
+        thumbShape: const RoundSliderThumbShape(
+          enabledThumbRadius: 6,
+        ),
         overlayShape: SliderComponentShape.noOverlay,
       ),
       child: ValueListenableBuilder(

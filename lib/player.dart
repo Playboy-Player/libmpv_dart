@@ -21,9 +21,11 @@ class Player {
   int get handle => ctx.address;
   bool _videoOutput = false;
 
-
-  Player(Map<String, String> options, {bool initialize = true,bool videoOutput = false}) {
-
+  Player(
+    Map<String, String> options, {
+    bool initialize = true,
+    bool videoOutput = false,
+  }) {
     if (!Library.loaded) {
       if (!Library.flagFirst) {
         Library.init();
@@ -46,15 +48,11 @@ class Player {
       calloc.free(value);
     }
     if (initialize) {
-      int error = Library.libmpv.mpv_initialize(ctx);
-      if (error != mpv_error.MPV_ERROR_SUCCESS.value) {
-        throw Exception(
-            Library.libmpv.mpv_error_string(error).cast<Utf8>().toDartString());
-      }
+      init(videoOutput: videoOutput);
     }
   }
 
-  void initialize() {
+  void init({bool videoOutput = false}) {
     int error = Library.libmpv.mpv_initialize(ctx);
     if (error != mpv_error.MPV_ERROR_SUCCESS.value) {
       throw Exception(
@@ -124,13 +122,19 @@ class Player {
       format,
     );
     calloc.free(name);
+    _observedProperties.add(property);
   }
 
-  void unObserveProperty(int propertyId) {
+  // use the propertyId passed in observeProperty Function to remove
+  // (optional) pass the propertyName to cancel the observation in event handler
+  void unObserveProperty(int propertyId, {String? propertyName}) {
     Library.libmpv.mpv_unobserve_property(
       ctx,
       0,
     );
+    if (propertyName != null) {
+      _observedProperties.remove(propertyName);
+    }
   }
 
   // if the width/height is null, the output size will be same as video size
@@ -246,16 +250,13 @@ class Player {
     calloc.free(string);
   }
 
-
   void setPropertyNode(String name, Pointer<mpv_node> node) {
     final namePtr = name.toNativeUtf8();
-    setPropertyAll(name, mpv_format.MPV_FORMAT_NODE, node.cast());
+    _setProperty(name, mpv_format.MPV_FORMAT_NODE, node.cast());
     calloc.free(namePtr);
   }
 
-
   @Deprecated('It is recommended to use setProperty with typed arguments')
-
   void setProperty(String name, dynamic value) {
     if (value is double) {
       setPropertyDouble(name, value);
@@ -401,7 +402,9 @@ class Player {
   final ValueNotifier<int> duration = ValueNotifier<int>(0);
   final ValueNotifier<double> volume = ValueNotifier<double>(100);
   final ValueNotifier<double> speed = ValueNotifier<double>(1.0);
-  final ValueNotifier<int> playlistIndex = ValueNotifier<int>(0);
+
+  Function(String, mpv_format)? propertyChangedCallback;
+  final Set<String> _observedProperties = {};
 
   void _mpvCallback(Pointer<mpv_handle> ctx) async {
     while (true) {
@@ -419,24 +422,19 @@ class Player {
       if (propName == 'pause' &&
           prop.ref.format == mpv_format.MPV_FORMAT_FLAG) {
         paused.value = prop.ref.data.cast<Int8>().value != 0;
-      }
-      if (propName == 'duration' &&
+      } else if (propName == 'duration' &&
           prop.ref.format == mpv_format.MPV_FORMAT_DOUBLE) {
         duration.value = prop.ref.data.cast<Double>().value ~/ 1;
-      }
-      if (propName == 'volume' &&
+      } else if (propName == 'volume' &&
           prop.ref.format == mpv_format.MPV_FORMAT_DOUBLE) {
         volume.value = prop.ref.data.cast<Double>().value;
-      }
-      if (propName == 'speed' &&
+      } else if (propName == 'speed' &&
           prop.ref.format == mpv_format.MPV_FORMAT_DOUBLE) {
         speed.value = prop.ref.data.cast<Double>().value;
-      }
-      if (propName == 'time-pos' &&
+      } else if (propName == 'time-pos' &&
           prop.ref.format == mpv_format.MPV_FORMAT_DOUBLE) {
         position.value = prop.ref.data.cast<Double>().value ~/ 1;
-      }
-      if (propName == 'video-out-params' &&
+      } else if (propName == 'video-out-params' &&
           prop.ref.format == mpv_format.MPV_FORMAT_NODE) {
         final node = prop.ref.data.cast<mpv_node>().ref;
         final data = <String, dynamic>{};
@@ -498,8 +496,7 @@ class Player {
           }
           setOutputSize(width: width, height: height);
         }
-      }
-      if (propName == 'audio-params' &&
+      } else if (propName == 'audio-params' &&
           prop.ref.format == mpv_format.MPV_FORMAT_NODE) {
         final data = prop.ref.data.cast<mpv_node>();
         final list = data.ref.u.list.ref;
@@ -549,6 +546,9 @@ class Player {
           channelCount: params['channel-count'],
           hrChannels: params['hr-channels'],
         );
+      }
+      if (_observedProperties.contains(propName)) {
+        propertyChangedCallback?.call(propName, prop.ref.format);
       }
     }
   }

@@ -38,14 +38,15 @@ sudo apt install libmpv-dart
 Generate a player instance(corresponding to mpv_handle)
 
 ```dart
-import 'package:libmpv_dart/libmpv.dart' as mpv;
-option={
-"terminal":"yes",
-"gapless-audio":"yes",
-"log-file":logPath,    //corresponding to mpv_set_option_string()
-};
-  }
-  mpv.Player player = mpv.Player(option);
+// initial options for players
+_player = Player(
+  {
+    'config': 'yes',
+    'input-default-bindings': 'yes',
+  },
+  videoOutput: true,
+);
+_player.setPropertyString('keep-open', 'yes');
 ```
 
 then you can execute some command,for example.load a file:
@@ -63,15 +64,15 @@ player.destroy();
 or you can wait for a mpv event:
 
 ```dart
- while(true){
-   Pointer<mpv_event> event=player.waitEvent(0);
-if(event.ref.event_id==mpv_event_id.MPV_EVENT_SHUTDOWN){
-break;
+while (true) {
+  Pointer<mpv_event> event = player.waitEvent(0);
+  if (event.ref.event_id == mpv_event_id.MPV_EVENT_SHUTDOWN) {
+    break;
+  } else if (event.ref.event_id == mpv_event_id.MPV_EVENT_END_FILE) {
+    break;
+  }
+  //wait until event happen.
 }
-else if(event.ref.event_id==mpv_event_id.MPV_EVENT_END_FILE){
-  break;
-}  
-//wait until event happen.
 ```
 
 ## credits
