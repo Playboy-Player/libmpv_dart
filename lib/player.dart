@@ -403,7 +403,7 @@ class Player {
   final ValueNotifier<double> volume = ValueNotifier<double>(100);
   final ValueNotifier<double> speed = ValueNotifier<double>(1.0);
 
-  Function(String, mpv_format)? propertyChangedCallback;
+  Function(Pointer<mpv_event>)? propertyChangedCallback;
   final Set<String> _observedProperties = {};
 
   void _mpvCallback(Pointer<mpv_handle> ctx) async {
@@ -548,7 +548,7 @@ class Player {
         );
       }
       if (_observedProperties.contains(propName)) {
-        propertyChangedCallback?.call(propName, prop.ref.format);
+        propertyChangedCallback?.call(event);
       }
     }
   }
